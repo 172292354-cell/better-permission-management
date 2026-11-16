@@ -1,0 +1,21 @@
+# Gradle / 构建产物
+.gradle/
+build/
+run/
+
+# 本地构建脚本临时产物
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+out/
+
+# 系统文件
+.DS_Store
+Thumbs.db
