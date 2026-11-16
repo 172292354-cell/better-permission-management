@@ -9,21 +9,19 @@
 
 这是一个**仅服务端**模组：
 
-- **服务端**：必须安装，提供 `/opp` 命令与权限逻辑
-- **客户端**：不用安装，命令仍可直接使用，也不会被"mod 不一致"拦截
+- **服务端**：必须安装，提供 `/opp` 权限管理命令
+- **客户端**：不用安装，权限数据由服务端统一管理
 
 ## 权限节点
 
 权限节点是任意命名的字符串（如 `opp`、`gamemode.creative`、`foo.bar`）。
 
-- **默认节点 `opp`**：拥有后可执行 `/opp 1` 与 `/opp 0` 切换创造/生存模式。
-- **兼容老数据**：旧版本存储的大写 `OPP` 会自动被识别为 `opp`，老玩家权限不丢失。
+- 所有权限通过 `/opp` 命令统一授予、撤销与查询。
+- 权限节点由管理员自定义，name 由第三方 mod / 服务器逻辑自行约定。
 
 ## 命令
 
-所有命令都在 `/opp` 下。
-
-### 新版子命令（推荐）
+所有命令都在 `/opp` 下，均为子命令形式：
 
 | 命令 | 权限要求 | 功能 |
 |------|---------|------|
@@ -32,36 +30,20 @@
 | `/opp check <玩家>` | OP 或本人 | 查看玩家的权限列表 |
 | `/opp list` | OP | 列出所有在线玩家及其权限 |
 
-### 兼容旧版命令
-
-用于兼容本模组最初设计的三条命令，用法完全不变：
-
-| 命令 | 权限要求 | 功能 |
-|------|---------|------|
-| `/opp 1` | `opp` 权限 | 将执行者切换为创造模式 |
-| `/opp 0` | `opp` 权限 | 将执行者切换为生存模式 |
-| `/opp <玩家名>` | OP | 授予该玩家默认 `opp` 权限（等价于 `/opp grant 玩家名 opp`） |
-
-> 说明："兼容旧版"指保留早期规划的这些直接参数写法，以及兼容旧档中的大写 `OPP` 权限，
-> 让老玩家和旧数据无需任何调整即可继续使用。
-
 ## 使用示例
 
 ```
-# 作为管理员，授予玩家 Steve 切换模式的权限
+# 授予玩家 Steve 权限节点 opp
 /opp grant Steve opp
 
-# Steve 切换为创造模式
-/opp 1
-
-# Steve 切换回生存模式
-/opp 0
+# 授予玩家 Steve 权限节点 gamemode.creative
+/opp grant Steve gamemode.creative
 
 # 查看 Steve 的权限
 /opp check Steve
 
-# 撤销 Steve 的模式切换权限
-/opp revoke Steve opp
+# 撤销 Steve 的 gamemode.creative 权限
+/opp revoke Steve gamemode.creative
 
 # 列出所有在线玩家的权限
 /opp list
@@ -75,7 +57,7 @@
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-生成的 jar 位于 `build/libs/better_permission_management-1.1.jar`。
+生成的 jar 位于 `build/libs/better_permission_management-1.2.jar`。
 
 ## 环境
 

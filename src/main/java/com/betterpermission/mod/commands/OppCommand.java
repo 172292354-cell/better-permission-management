@@ -6,7 +6,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -25,8 +24,6 @@ import java.util.Set;
  *   /opp revoke <玩家> <权限节点>   - 撤销权限（需 OP）
  *   /opp check <玩家>               - 查看玩家权限（需 OP 或查询本人）
  *   /opp list                       - 列出在线玩家权限（需 OP）
- *   /opp <1|0>                      - 本人切换创造/生存模式（需 opp 权限）
- *   /opp <玩家名>                   - 授予默认 opp 权限（需 OP，兼容旧版）
  *
  * 命名说明：本文件中的 Minecraft 类方法/字段使用 SRG（混淆）名称，
  * 例如 m_82127_() 对应 Commands.literal()，当前构建环境无法联网执行 Gradle
@@ -43,8 +40,6 @@ public class OppCommand {
                 .then(revoke())
                 .then(check())
                 .then(list())
-                .then(Commands.m_82129_("arg", StringArgumentType.word())
-                    .executes(OppCommand::legacy))
         );
         logCommandTree(event);
         BetterPermissionMod.LOGGER.info("Registered /opp command.");
@@ -180,60 +175,6 @@ public class OppCommand {
         return 1;
     }
 
-    /**
-     * 兼容旧命令：
-     *   /opp <非数字>   - 需要 OP，授予该玩家默认 opp 权限
-     *   /opp 1          - 需要 opp 权限，切换创造模式
-     *   /opp 0          - 需要 opp 权限，切换生存模式
-     */
-    private static int legacy(CommandContext<CommandSourceStack> context) {
-        String arg = context.getArgument("arg", String.class);
-        CommandSourceStack source = context.getSource();
-
-        if (!source.m_230897_()) {
-            source.m_81352_(Component.m_237113_("该命令只能由玩家执行。"));
-            return 0;
-        }
-
-        ServerPlayer player = source.m_230896_();
-        if (player == null) {
-            return 0;
-        }
-
-        // 非数字参数 -> 授予默认 opp 权限（需要 OP）
-        if (!isNumeric(arg)) {
-            if (!source.m_6761_(2)) {
-                source.m_81352_(Component.m_237113_("你没有足够的权限使用该命令。"));
-                return 0;
-            }
-            ServerPlayer target = findPlayer(player, arg);
-            if (target == null) {
-                source.m_81352_(Component.m_237113_("玩家 '" + arg + "' 不在线。"));
-                return 0;
-            }
-            PermissionUtils.addPermission(target, PermissionUtils.PERMISSION_OPP);
-            source.m_288197_(() -> Component.m_237113_("已授予默认权限给 " + arg), false);
-            return 1;
-        }
-
-        // 数字参数 -> 切换创造/生存模式（需要 opp 权限）
-        if (!PermissionUtils.hasPermission(player, PermissionUtils.PERMISSION_OPP)) {
-            source.m_81352_(Component.m_237113_("你没有 opp 权限。"));
-            return 0;
-        }
-
-        if ("1".equals(arg)) {
-            player.m_143403_(GameType.CREATIVE);
-            source.m_288197_(() -> Component.m_237113_("已切换到创造模式。"), false);
-        } else if ("0".equals(arg)) {
-            player.m_143403_(GameType.SURVIVAL);
-            source.m_288197_(() -> Component.m_237113_("已切换到生存模式。"), false);
-        } else {
-            source.m_81352_(Component.m_237113_("无效参数。可使用: 玩家名/1/0，或子命令 grant/revoke/check/list。"));
-        }
-        return 1;
-    }
-
     // ---------- 辅助 ----------
 
     private static boolean requireOp(CommandSourceStack source) {
@@ -250,14 +191,5 @@ public class OppCommand {
 
     private static ServerPlayer findPlayer(ServerPlayer operator, String name) {
         return operator.f_8924_.m_6846_().m_11255_(name);
-    }
-
-    private static boolean isNumeric(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }
