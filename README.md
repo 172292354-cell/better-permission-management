@@ -1,4 +1,4 @@
-# Better Permission Management
+# 更好的权限管理 (Better Permission Management)
 
 一个 Minecraft Java 版 **Forge 1.20.1** 的权限管理模组。
 
