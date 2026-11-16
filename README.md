@@ -75,7 +75,7 @@
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-生成的 jar 位于 `build/libs/better_permission_management-1.0.jar`。
+生成的 jar 位于 `build/libs/better_permission_management-1.1.jar`。
 
 ## 环境
 
