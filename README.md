@@ -75,3 +75,18 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 - Minecraft 1.20.1
 - Forge 47.4.0
 - Java 17
+
+## 许可证
+
+本项目采用 **CC BY-NC-SA 4.0**（署名-非商业性使用-相同方式共享 4.0 国际）许可证发布。
+
+**你可以：**
+- 复制、修改、分发本项目的代码
+
+**前提条件：**
+- **不得商用**
+- 必须保留署名与版权声明
+- 你的修改/衍生作品也**必须使用相同许可证**（保持开源）
+
+详细条款见 [LICENSE](LICENSE) 文件，官方文本见
+[creativecommons.org/licenses/by-nc-sa/4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)。
