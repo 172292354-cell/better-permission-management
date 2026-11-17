@@ -2,7 +2,7 @@
 
 一个 Minecraft Java 版 **Forge 1.20.1** 的权限管理模组。
 
-基于权限节点（permission node）的轻量权限系统，权限数据通过 Forge 的
+为玩家授予/撤销单一的 OPP 权限，权限数据通过 Forge 的
 `getPersistentData()` 随玩家存档持久化保存。
 
 ## 部署说明
@@ -12,40 +12,37 @@
 - **服务端**：必须安装，提供 `/opp` 权限管理命令
 - **客户端**：不用安装，权限数据由服务端统一管理
 
-## 权限节点
+## OPP 权限
 
-权限节点是任意命名的字符串（如 `opp`、`gamemode.creative`、`foo.bar`）。
+模组管理一个固定的 **OPP** 权限：
 
-- 所有权限通过 `/opp` 命令统一授予、撤销与查询。
-- 权限节点由管理员自定义，name 由第三方 mod / 服务器逻辑自行约定。
+- 玩家要么**拥有 OPP**，要么**没有**，不存在多级/多节点。
+- 权限随玩家存档保存，重启服务器、玩家离线后再上线依然保留。
 
 ## 命令
 
-所有命令都在 `/opp` 下，均为子命令形式：
+所有命令都在 `/opp` 下：
 
 | 命令 | 权限要求 | 功能 |
 |------|---------|------|
-| `/opp grant <玩家> <节点>` | OP | 授予玩家指定权限节点 |
-| `/opp revoke <玩家> <节点>` | OP | 撤销玩家的权限节点 |
-| `/opp check <玩家>` | OP 或本人 | 查看玩家的权限列表 |
-| `/opp list` | OP | 列出所有在线玩家及其权限 |
+| `/opp grant <玩家>` | OP | 授予指定玩家 OPP 权限 |
+| `/opp revoke <玩家>` | OP | 撤销指定玩家的 OPP 权限 |
+| `/opp check <玩家>` | OP 或本人 | 查看玩家是否拥有 OPP 权限 |
+| `/opp list` | OP | 列出所有拥有 OPP 权限的在线玩家 |
 
 ## 使用示例
 
 ```
-# 授予玩家 Steve 权限节点 opp
-/opp grant Steve opp
+# 授予玩家 Steve OPP 权限
+/opp grant Steve
 
-# 授予玩家 Steve 权限节点 gamemode.creative
-/opp grant Steve gamemode.creative
-
-# 查看 Steve 的权限
+# 查看 Steve 是否拥有 OPP 权限
 /opp check Steve
 
-# 撤销 Steve 的 gamemode.creative 权限
-/opp revoke Steve gamemode.creative
+# 撤销 Steve 的 OPP 权限
+/opp revoke Steve
 
-# 列出所有在线玩家的权限
+# 列出所有拥有 OPP 权限的在线玩家
 /opp list
 ```
 
@@ -57,7 +54,7 @@
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-生成的 jar 位于 `build/libs/better_permission_management-1.2.jar`。
+生成的 jar 位于 `build/libs/better_permission_management-1.3.jar`。
 
 ## 环境
 

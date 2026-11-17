@@ -14,16 +14,17 @@ import com.betterpermission.mod.BetterPermissionMod;
 import com.betterpermission.mod.PermissionUtils;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * /opp 权限管理命令。
  *
+ * 权限为固定的 OPP（大写）权限。
+ *
  * 子命令：
- *   /opp grant <玩家> <权限节点>    - 授予权限（需 OP）
- *   /opp revoke <玩家> <权限节点>   - 撤销权限（需 OP）
- *   /opp check <玩家>               - 查看玩家权限（需 OP 或查询本人）
- *   /opp list                       - 列出在线玩家权限（需 OP）
+ *   /opp grant <玩家>   - 授予 OPP 权限（需 OP）
+ *   /opp revoke <玩家>  - 撤销 OPP 权限（需 OP）
+ *   /opp check <玩家>   - 查看玩家是否拥有 OPP（需 OP 或查询本人）
+ *   /opp list           - 列出拥有 OPP 权限的在线玩家（需 OP）
  *
  * 命名说明：本文件中的 Minecraft 类方法/字段使用 SRG（混淆）名称，
  * 例如 m_82127_() 对应 Commands.literal()，当前构建环境无法联网执行 Gradle
@@ -65,15 +66,13 @@ public class OppCommand {
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> grant() {
         return Commands.m_82127_("grant")
             .then(Commands.m_82129_("player", StringArgumentType.word())
-                .then(Commands.m_82129_("permission", StringArgumentType.word())
-                    .executes(OppCommand::grant)));
+                .executes(OppCommand::grant));
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> revoke() {
         return Commands.m_82127_("revoke")
             .then(Commands.m_82129_("player", StringArgumentType.word())
-                .then(Commands.m_82129_("permission", StringArgumentType.word())
-                    .executes(OppCommand::revoke)));
+                .executes(OppCommand::revoke));
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> check() {
@@ -96,13 +95,12 @@ public class OppCommand {
         ServerPlayer operator = source.m_230896_();
         ServerPlayer target = findPlayer(operator,
             context.getArgument("player", String.class));
-        String permission = context.getArgument("permission", String.class);
         if (target == null) {
             source.m_81352_(Component.m_237113_("玩家不存在。"));
             return 0;
         }
-        PermissionUtils.addPermission(target, permission);
-        source.m_288197_(() -> Component.m_237113_("已授予权限 '" + permission + "' 给 " + target.m_5446_().getString()), false);
+        PermissionUtils.grantOPP(target);
+        source.m_288197_(() -> Component.m_237113_("已授予 " + target.m_5446_().getString() + " OPP 权限。"), false);
         return 1;
     }
 
@@ -113,13 +111,12 @@ public class OppCommand {
         ServerPlayer operator = source.m_230896_();
         ServerPlayer target = findPlayer(operator,
             context.getArgument("player", String.class));
-        String permission = context.getArgument("permission", String.class);
         if (target == null) {
             source.m_81352_(Component.m_237113_("玩家不存在。"));
             return 0;
         }
-        PermissionUtils.removePermission(target, permission);
-        source.m_288197_(() -> Component.m_237113_("已撤销权限 '" + permission + "' 从 " + target.m_5446_().getString()), false);
+        PermissionUtils.revokeOPP(target);
+        source.m_288197_(() -> Component.m_237113_("已撤销 " + target.m_5446_().getString() + " 的 OPP 权限。"), false);
         return 1;
     }
 
@@ -144,11 +141,10 @@ public class OppCommand {
             return 0;
         }
 
-        Set<String> perms = PermissionUtils.getPermissions(target);
-        if (perms.isEmpty()) {
-            source.m_288197_(() -> Component.m_237113_(target.m_5446_().getString() + " 暂无任何权限。"), false);
+        if (PermissionUtils.hasOPP(target)) {
+            source.m_288197_(() -> Component.m_237113_(target.m_5446_().getString() + " 拥有 OPP 权限。"), false);
         } else {
-            source.m_288197_(() -> Component.m_237113_(target.m_5446_().getString() + " 权限: " + String.join(", ", perms)), false);
+            source.m_288197_(() -> Component.m_237113_(target.m_5446_().getString() + " 没有 OPP 权限。"), false);
         }
         return 1;
     }
@@ -161,16 +157,14 @@ public class OppCommand {
         List<ServerPlayer> players = operator.f_8924_.m_6846_().m_11314_();
         boolean any = false;
         for (ServerPlayer sp : players) {
-            Set<String> perms = PermissionUtils.getPermissions(sp);
-            if (!perms.isEmpty()) {
+            if (PermissionUtils.hasOPP(sp)) {
                 any = true;
                 final ServerPlayer p = sp;
-                final Set<String> permsFinal = perms;
-                source.m_288197_(() -> Component.m_237113_(p.m_5446_().getString() + " 权限: " + String.join(", ", permsFinal)), false);
+                source.m_288197_(() -> Component.m_237113_(p.m_5446_().getString() + " 拥有 OPP 权限。"), false);
             }
         }
         if (!any) {
-            source.m_288197_(() -> Component.m_237113_("当前没有玩家拥有权限。"), false);
+            source.m_288197_(() -> Component.m_237113_("当前没有玩家拥有 OPP 权限。"), false);
         }
         return 1;
     }
