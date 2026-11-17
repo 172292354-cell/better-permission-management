@@ -6,6 +6,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -25,6 +26,12 @@ import java.util.List;
  *   /opp revoke <玩家>  - 撤销 OPP 权限（需 OP）
  *   /opp check <玩家>   - 查看玩家是否拥有 OPP（需 OP 或查询本人）
  *   /opp list           - 列出拥有 OPP 权限的在线玩家（需 OP）
+ *   /opp survival [玩家] - 切换生存模式（无玩家=自己，需 OPP 或 OP；指定玩家需 OP）
+ *   /opp creative [玩家] - 切换创造模式（无玩家=自己，需 OPP 或 OP；指定玩家需 OP）
+ *
+ * 模式切换权限规则：
+ *   - 不指定玩家时：执行者拥有 OPP 权限 或 是 OP，即可切换自己的模式。
+ *   - 指定玩家时：执行者必须是 OP，才能切换目标玩家的模式。
  *
  * 命名说明：本文件中的 Minecraft 类方法/字段使用 SRG（混淆）名称，
  * 例如 m_82127_() 对应 Commands.literal()，当前构建环境无法联网执行 Gradle
@@ -41,6 +48,8 @@ public class OppCommand {
                 .then(revoke())
                 .then(check())
                 .then(list())
+                .then(survival())
+                .then(creative())
         );
         logCommandTree(event);
         BetterPermissionMod.LOGGER.info("Registered /opp command.");
@@ -84,6 +93,20 @@ public class OppCommand {
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> list() {
         return Commands.m_82127_("list")
             .executes(OppCommand::list);
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> survival() {
+        return Commands.m_82127_("survival")
+            .executes(OppCommand::selfSurvival)
+            .then(Commands.m_82129_("player", StringArgumentType.word())
+                .executes(OppCommand::targetSurvival));
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> creative() {
+        return Commands.m_82127_("creative")
+            .executes(OppCommand::selfCreative)
+            .then(Commands.m_82129_("player", StringArgumentType.word())
+                .executes(OppCommand::targetCreative));
     }
 
     // ---------- 处理器 ----------
@@ -166,6 +189,61 @@ public class OppCommand {
         if (!any) {
             source.m_288197_(() -> Component.m_237113_("当前没有玩家拥有 OPP 权限。"), false);
         }
+        return 1;
+    }
+
+    // ---------- 模式切换 ----------
+
+    private static int selfSurvival(CommandContext<CommandSourceStack> context) {
+        return switchOwnMode(context, GameType.SURVIVAL, "生存");
+    }
+
+    private static int selfCreative(CommandContext<CommandSourceStack> context) {
+        return switchOwnMode(context, GameType.CREATIVE, "创造");
+    }
+
+    private static int targetSurvival(CommandContext<CommandSourceStack> context) {
+        return switchOtherMode(context, GameType.SURVIVAL, "生存");
+    }
+
+    private static int targetCreative(CommandContext<CommandSourceStack> context) {
+        return switchOtherMode(context, GameType.CREATIVE, "创造");
+    }
+
+    /** 切换自己的模式：需 OPP 权限 或 OP 权限 */
+    private static int switchOwnMode(CommandContext<CommandSourceStack> context, GameType mode, String modeName) {
+        CommandSourceStack source = context.getSource();
+        if (!source.m_230897_()) {
+            source.m_81352_(Component.m_237113_("该命令只能由玩家执行。"));
+            return 0;
+        }
+        ServerPlayer player = source.m_230896_();
+        if (player == null) {
+            return 0;
+        }
+        if (!PermissionUtils.hasOPP(player) && !source.m_6761_(2)) {
+            source.m_81352_(Component.m_237113_("你没有 OPP 权限或 OP 权限。"));
+            return 0;
+        }
+        player.m_143403_(mode);
+        source.m_288197_(() -> Component.m_237113_("已切换为" + modeName + "模式。"), false);
+        return 1;
+    }
+
+    /** 切换目标玩家的模式：执行者必须是 OP */
+    private static int switchOtherMode(CommandContext<CommandSourceStack> context, GameType mode, String modeName) {
+        CommandSourceStack source = context.getSource();
+        if (!requireOp(source)) return 0;
+
+        ServerPlayer operator = source.m_230896_();
+        ServerPlayer target = findPlayer(operator,
+            context.getArgument("player", String.class));
+        if (target == null) {
+            source.m_81352_(Component.m_237113_("玩家不存在。"));
+            return 0;
+        }
+        target.m_143403_(mode);
+        source.m_288197_(() -> Component.m_237113_("已将 " + target.m_5446_().getString() + " 切换为" + modeName + "模式。"), false);
         return 1;
     }
 

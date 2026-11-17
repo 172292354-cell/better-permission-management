@@ -2,8 +2,8 @@
 
 一个 Minecraft Java 版 **Forge 1.20.1** 的权限管理模组。
 
-为玩家授予/撤销单一的 OPP 权限，权限数据通过 Forge 的
-`getPersistentData()` 随玩家存档持久化保存。
+提供 OPP 权限管理，以及基于 OPP/OP 权限的模式切换功能。权限数据通过
+Forge 的 `getPersistentData()` 随玩家存档持久化保存。
 
 ## 部署说明
 
@@ -16,8 +16,9 @@
 
 模组管理一个固定的 **OPP** 权限：
 
-- 玩家要么**拥有 OPP**，要么**没有**，不存在多级/多节点。
+- 玩家要么**拥有 OPP**，要么**没有**。
 - 权限随玩家存档保存，重启服务器、玩家离线后再上线依然保留。
+- 拥有 OPP 或 OP 的玩家可以切换自己的游戏模式。
 
 ## 命令
 
@@ -29,6 +30,13 @@
 | `/opp revoke <玩家>` | OP | 撤销指定玩家的 OPP 权限 |
 | `/opp check <玩家>` | OP 或本人 | 查看玩家是否拥有 OPP 权限 |
 | `/opp list` | OP | 列出所有拥有 OPP 权限的在线玩家 |
+| `/opp survival [玩家]` | OPP 或 OP（切自己）；指定玩家需 OP | 切换为生存模式 |
+| `/opp creative [玩家]` | OPP 或 OP（切自己）；指定玩家需 OP | 切换为创造模式 |
+
+### 模式切换说明
+
+- **不写玩家**：切换**自己**的模式。要求执行者拥有 **OPP** 权限 **或** OP 权限。
+- **写了玩家**：切换**指定玩家**的模式。要求执行者必须是 **OP**。
 
 ## 使用示例
 
@@ -36,13 +44,19 @@
 # 授予玩家 Steve OPP 权限
 /opp grant Steve
 
-# 查看 Steve 是否拥有 OPP 权限
+# Steve 查看自己的权限
 /opp check Steve
+
+# Steve 切换为自己的创造模式（Steve 拥有 OPP 或为 OP）
+/opp creative
+
+# 管理员把 Steve 切为生存模式（执行者必须是 OP）
+/opp survival Steve
 
 # 撤销 Steve 的 OPP 权限
 /opp revoke Steve
 
-# 列出所有拥有 OPP 权限的在线玩家
+# 列出拥有 OPP 权限的在线玩家
 /opp list
 ```
 
@@ -54,7 +68,7 @@
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-生成的 jar 位于 `build/libs/better_permission_management-1.3.jar`。
+生成的 jar 位于 `build/libs/better_permission_management-1.4.jar`。
 
 ## 环境
 
